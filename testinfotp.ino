@@ -1,23 +1,20 @@
-/* This file has been prepared for Doxygen automatic documentation generation.*/
 /*! \file *********************************************************************
  *
  * \brief
  *      Transmition d'un code ASCII à l'aide d'Arduino
  *
-
- *
  * \par Note :  Fichier à partir de la Datasheet
  *
  * \par Documentation : https://ww1.microchip.com/downloads/en/DeviceDoc/Atmel-7810-Automotive-Microcontrollers-ATmega328P_Datasheet.pdf
- * 
+ *
  * \author
  *      Github: https://github.com/Totom08 \n
  *      email: thomas.davenne@etudiant.univ-reims.fr
  *
- * $Name: LiaisonSerie_RELEASE_1_0 $
+ * $Name: LiaisonSerie_RELEASE_2_0 $
  * $Revision: 1.8 $
  * $RCSfile: testinfotp.c,v $
- * $Date: 2023/11/22 11:02:21 $  \n
+ * $Date: 2023/11/28 12:10:21 $  \n
  * 
  */
 
@@ -31,57 +28,63 @@
 
 int flag=0;
 
-/*! \brief Fonction Initialisation
+/*! \brief Fonction d'initialisation de l'USART
+ *
+ *  Configure l'USART avec la vitesse de transmission, le mode asynchrone,
+ *  8 bits de données, 2 bits d'arrêt, pas de parité.
+ *
+ *  \param ubrr Valeur du registre de baud rate pour la vitesse souhaitée.
  */
 void USART_Init(unsigned int ubrr)
 {
-/*Set baud rate */
-UBRR0H = (unsigned char)(ubrr>>8);
-UBRR0L = (unsigned char)ubrr;
-/*Enable receiver and transmitter */
-UCSR0B = (1<<RXEN0)|(1<<TXEN0)|(1<<RXCIE0);
-/* Set frame format: 8data, 2stop bit */
-UCSR0C = (1<<USBS0)|(3<<UCSZ00);
+    /*Set baud rate */
+    UBRR0H = (unsigned char)(ubrr>>8);
+    UBRR0L = (unsigned char)ubrr;
+    /*Enable receiver and transmitter */
+    UCSR0B = (1<<RXEN0)|(1<<TXEN0)|(1<<RXCIE0);
+    /* Set frame format: 8 data bits, 2 stop bits */
+    UCSR0C = (1<<USBS0)|(3<<UCSZ00);
 }
 
-/*! \brief Fonction Transmition
+/*! \brief Fonction de transmission de données via l'USART
+ *
+ *  \param data Caractère à transmettre.
  */
 void USART_Transmit(unsigned char data)
 {
-/* Wait for empty transmit buffer */
-while (!(UCSR0A & (1<<UDRE0)))
-;
-/* Put data into buffer, sends the data */
-UDR0 = data;
+    /* Wait for empty transmit buffer */
+    while (!(UCSR0A & (1<<UDRE0)))
+        ;
+    /* Put data into buffer, sends the data */
+    UDR0 = data;
 }
 
-/*! \brief Fonction Recevoir
+/*! \brief Interruption de réception de l'USART
+ *
+ *  Cette interruption est déclenchée lorsqu'un caractère est reçu sur l'USART.
+ *  Elle détecte les erreurs de communication (framing, parity, overrun) et
+ *  transmet le caractère ou un message d'erreur en conséquence.
  */
-unsigned char USART_Receive(void)
-{
-/* Wait for data to be received */
-while (!(UCSR0A & (1<<RXC0)))
-;
-/* Get and return received data from buffer */
-return UDR0;
-}
-
-/*! \brief Interruption
- */
-ISR(USART_RX_vect) //https://www.nongnu.org/avr-libc/user-manual/group__avr__interrupts.html
+ISR(USART_RX_vect)
 {
     char status=UCSR0A;
     char byteReceive = UDR0;
+
+    // Vérifier s'il n'y a pas d'erreur de communication
     if ((status & (FRAMING_ERROR | PARITY_ERROR | DATA_OVERRUN))==0){
-      USART_Transmit(byteReceive);
+        // Transmettre le caractère reçu
+        USART_Transmit(byteReceive);
     }
     else{
-      USART_putsln("!error");
+        // S'il y a une erreur, transmettre le message d'erreur
+        USART_putsln("!error");
     }
 }
 
-/*! \brief Fonction pour les chaines de caractères :
-*/
+/*! \brief Fonction pour l'envoi d'une chaîne de caractères via l'USART
+ *
+ *  \param str Pointeur vers la chaîne de caractères à transmettre.
+ */
 void USART_puts(unsigned char *str) {
     // Envoyer chaque caractère de la chaîne jusqu'à la fin
     while (*str != 0) {
@@ -90,44 +93,29 @@ void USART_puts(unsigned char *str) {
     }
 }
 
+/*! \brief Fonction pour l'envoi d'une chaîne de caractères suivie d'un retour à la ligne via l'USART
+ *
+ *  \param str Pointeur vers la chaîne de caractères à transmettre.
+ */
 void USART_putsln(unsigned char *str) {
     // Utiliser la fonction USART_puts pour envoyer la chaîne
     USART_puts(str);
 
-    // Ajouter un retour à la ligne ('\n') à la fin
+    // Ajouter un retour à la ligne ('\n') et un retour chariot ('\r') à la fin
     USART_Transmit('\n');
     USART_Transmit('\r');
 }
 
-/*! \brief Fonction Main
+/*! \brief Fonction principale
+ *
+ *  Fonction principale du programme.
  */
 int main(void)
 {
-
-USART_Init(MYUBRR);
-_delay_ms(1000); // Attendre un peu après l'initialisation
-sei();
-while(1){
-/*USART_Transmit('D');
-USART_Transmit('o');
-USART_Transmit('r');
-USART_Transmit('i');
-USART_Transmit('a');
-USART_Transmit('n');
-USART_Transmit(' ');
-USART_Transmit('C');
-USART_Transmit('H');
-USART_Transmit('A');
-USART_Transmit('U');
-USART_Transmit('V');
-USART_Transmit('E');
-USART_Transmit('T');
-USART_Transmit('\n');
-_delay_ms(1000);*/
-  _delay_ms(1);
-  //USART_putsln("Hello, Arduino!");
-  //_delay_ms(1000);
-}
-
-
+    USART_Init(MYUBRR);
+    _delay_ms(1000); // Attendre un peu après l'initialisation
+    sei();
+    while(1){
+        _delay_ms(1);
+    }
 }
