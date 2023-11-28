@@ -70,7 +70,14 @@ return UDR0;
  */
 ISR(USART_RX_vect) //https://www.nongnu.org/avr-libc/user-manual/group__avr__interrupts.html
 {
-  flag=1;
+    char status=UCSR0A;
+    char byteReceive = UDR0;
+    if ((status & (FRAMING_ERROR | PARITY_ERROR | DATA_OVERRUN))==0){
+      USART_Transmit(byteReceive);
+    }
+    else{
+      USART_putsln("!error");
+    }
 }
 
 /*! \brief Fonction pour les chaines de caractères :
@@ -117,17 +124,6 @@ USART_Transmit('E');
 USART_Transmit('T');
 USART_Transmit('\n');
 _delay_ms(1000);*/
-  if (flag==1){
-    char status=UCSR0A;
-    char byteReceive = UDR0;
-    if ((status & (FRAMING_ERROR | PARITY_ERROR | DATA_OVERRUN))==0){
-      USART_Transmit(byteReceive);
-    }
-    else{
-      USART_putsln("!error");
-    }
-    flag=0;
-  }
   _delay_ms(1);
   //USART_putsln("Hello, Arduino!");
   //_delay_ms(1000);
