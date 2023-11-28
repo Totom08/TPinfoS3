@@ -24,6 +24,11 @@
 #define FOSC 16000000 // Clock Speed
 #define BAUD 9600
 #define MYUBRR FOSC/16/BAUD-1
+
+#define FRAMING_ERROR (1<<FE0)
+#define PARITY_ERROR (1<<UPE0)
+#define DATA_OVERRUN (1<<DOR0)
+
 int flag=0;
 
 /*! \brief Fonction Initialisation
@@ -94,7 +99,7 @@ int main(void)
 
 USART_Init(MYUBRR);
 _delay_ms(1000); // Attendre un peu après l'initialisation
-//sei();
+sei();
 while(1){
 /*USART_Transmit('D');
 USART_Transmit('o');
@@ -111,14 +116,21 @@ USART_Transmit('V');
 USART_Transmit('E');
 USART_Transmit('T');
 USART_Transmit('\n');
-_delay_ms(1000);
+_delay_ms(1000);*/
   if (flag==1){
-    USART_Transmit(UDR0);
+    char status=UCSR0A;
+    char byteReceive = UDR0;
+    if ((status & (FRAMING_ERROR | PARITY_ERROR | DATA_OVERRUN))==0){
+      USART_Transmit(byteReceive);
+    }
+    else{
+      USART_putsln("!error");
+    }
     flag=0;
   }
-  _delay_ms(1);*/
-  USART_putsln("Hello, Arduino!");
-  _delay_ms(1000);
+  _delay_ms(1);
+  //USART_putsln("Hello, Arduino!");
+  //_delay_ms(1000);
 }
 
 
