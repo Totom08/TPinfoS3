@@ -68,13 +68,33 @@ ISR(USART_RX_vect) //https://www.nongnu.org/avr-libc/user-manual/group__avr__int
   flag=1;
 }
 
+/*! \brief Fonction pour les chaines de caractères :
+*/
+void USART_puts(unsigned char *str) {
+    // Envoyer chaque caractère de la chaîne jusqu'à la fin
+    while (*str != 0) {
+        USART_Transmit(*str);
+        str++;
+    }
+}
+
+void USART_putsln(unsigned char *str) {
+    // Utiliser la fonction USART_puts pour envoyer la chaîne
+    USART_puts(str);
+
+    // Ajouter un retour à la ligne ('\n') à la fin
+    USART_Transmit('\n');
+    USART_Transmit('\r');
+}
+
 /*! \brief Fonction Main
  */
 int main(void)
 {
 
 USART_Init(MYUBRR);
-sei();
+_delay_ms(1000); // Attendre un peu après l'initialisation
+//sei();
 while(1){
 /*USART_Transmit('D');
 USART_Transmit('o');
@@ -91,12 +111,14 @@ USART_Transmit('V');
 USART_Transmit('E');
 USART_Transmit('T');
 USART_Transmit('\n');
-_delay_ms(1000);*/
+_delay_ms(1000);
   if (flag==1){
     USART_Transmit(UDR0);
     flag=0;
   }
-  _delay_ms(1);
+  _delay_ms(1);*/
+  USART_putsln("Hello, Arduino!");
+  _delay_ms(1000);
 }
 
 
