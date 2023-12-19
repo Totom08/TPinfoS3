@@ -1,3 +1,45 @@
+/*! \mainpage Transmition de données entre USART0 et USART3 sur Arduino
+
+\section intro_sec Introduction
+
+Ce programme réalise la transmission de données entre USART0 et USART3 sur une carte Arduino. 
+Il utilise les interruptions pour détecter la réception de données sur chaque port USART et les transmettre à l'autre port.
+
+\par Documentation:
+- Microchip Datasheet: https://ww1.microchip.com/downloads/en/DeviceDoc/Atmel-7810-Automotive-Microcontrollers-ATmega328P_Datasheet.pdf
+- GitHub: https://github.com/Totom08
+- Email: thomas.davenne@etudiant.univ-reims.fr
+
+\section hardware_sec Configuration matérielle
+
+- Fréquence du CPU: 16 MHz
+- Débit en bauds: 9600
+- Mode asynchrone, 8 bits de données, 1 bit de stop
+
+\section interrupt_sec Interruptions
+
+Deux interruptions sont utilisées pour indiquer la réception de données sur USART0 et USART3.
+- \ref USART0_RX_vect : Interruption de réception sur USART0
+- \ref USART3_RX_vect : Interruption de réception sur USART3
+
+\section usage_sec Utilisation
+
+- Les données reçues sur USART0 sont transmises via USART3.
+- Les données reçues sur USART3 sont transmises via USART0.
+- Les interruptions sont utilisées pour détecter la réception de données.
+
+\section author_sec Auteur
+
+Ce code a été développé par Thomas Davenne.
+
+$Name: LiaisonSerie_RELEASE_4_0 $
+$Revision: 4.0 $
+$RCSfile: testinfotp.c,v $
+$Date: 2023/12/22 11:02:21 $
+
+*/
+
+
 /*! \file *********************************************************************
  *
  * \brief
